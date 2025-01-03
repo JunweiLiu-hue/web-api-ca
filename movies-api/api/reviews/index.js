@@ -62,6 +62,27 @@ router.get('/', asyncHandler(async (req, res) => {
     res.status(200).json(reviews);
 }));
 
+router.put('/:reviewId', asyncHandler(async (req, res) => {
+    const { reviewId } = req.params;
+    const { newContent } = req.body;
+
+    if (!newContent) {
+        return res.status(400).json({ message: 'newContent is required.' });
+    }
+
+    const updatedReview = await Review.findByIdAndUpdate(
+        reviewId,
+        { content: newContent },
+        { new: true } 
+    );
+
+    if (!updatedReview) {
+        return res.status(404).json({ message: 'Review not found for the specified ID.' });
+    }
+
+    res.status(200).json(updatedReview);
+}));
+
 router.delete('/', asyncHandler(async (req, res) => {
     const { movieId, author } = req.query;
 
