@@ -47,6 +47,26 @@ router.get('/language/:lang', asyncHandler(async (req, res) => {
     res.status(200).json(movies);
 }));
 
+router.get('/year/:year', asyncHandler(async (req, res) => {
+    const year = parseInt(req.params.year); 
+    if (!year || isNaN(year)) {
+        return res.status(400).json({ message: 'Year is required and must be a valid number' });
+    }
+
+    const startOfYear = `${year}-01-01`;
+    const endOfYear = `${year}-12-31`;
+
+    const movies = await movieModel.find({
+        release_date: { $gte: startOfYear, $lte: endOfYear }
+    });
+
+    if (!movies.length) {
+        return res.status(404).json({ message: `No movies found for the year: ${year}` });
+    }
+
+    res.status(200).json(movies);
+}));
+
 // Get movie details
 router.get('/:id', asyncHandler(async (req, res) => {
     const id = parseInt(req.params.id);
