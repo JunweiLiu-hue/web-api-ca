@@ -30,6 +30,22 @@ router.get('/', asyncHandler(async (req, res) => {
     res.status(200).json(returnObject);
 }));
 
+router.get('/language/:lang', asyncHandler(async (req, res) => {
+    const language = req.params.lang; 
+    if (!language) {
+        return res.status(400).json({ message: 'Language code is required' });
+    }
+
+    const movies = await movieModel.find({
+        original_language: language
+    });
+
+    if (!movies.length) {
+        return res.status(404).json({ message: `No movies found for language: ${language}` });
+    }
+
+    res.status(200).json(movies);
+}));
 
 // Get movie details
 router.get('/:id', asyncHandler(async (req, res) => {
