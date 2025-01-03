@@ -21,13 +21,27 @@ router.get('/', asyncHandler(async (req, res) => {
     res.status(200).json(favorites);
 }));
 
-router.delete('/:id', asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const deletedFavorite = await Favorite.findByIdAndDelete(id);
-    if (!deletedFavorite) {
-        return res.status(404).json({ message: 'Favorite not found.' });
+router.delete('/', asyncHandler(async (req, res) => {
+    const { userId, movieId } = req.query;
+
+    if (!userId) {
+        return res.status(400).json({ message: 'userId is required' });
     }
-    res.status(204).send();
+
+    let deletedFavorite;
+    if (movieId) {
+        deletedFavorite = await Favorite.findOneAndDelete({ userId, movieId });
+        if (!deletedFavorite) {
+            return res.status(404).json({ message: 'Favorite not found.' });
+        }
+    } else {
+        deletedFavorite = await Favorite.deleteMany({ userId });
+        if (deletedFavorite.deletedCount === 0) {
+            return res.status(404).json({ message: 'No favorites found for this user.' });
+        }
+    }
+
+    res.status(204).send(); 
 }));
 
 export default router;
