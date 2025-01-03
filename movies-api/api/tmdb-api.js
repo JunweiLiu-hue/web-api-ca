@@ -16,6 +16,22 @@ export const getUpcomingMovies = async () => {
     }
 };
 
+export const getPopularMovies = async () => {
+    try {
+        const response = await fetch(
+            `https://api.themoviedb.org/3/movie/popular?api_key=${process.env.TMDB_KEY}&language=en-US&page=1`
+        );
+
+        if (!response.ok) {
+            throw new Error((await response.json()).message);
+        }
+
+        return await response.json();
+    } catch (error) {
+        throw error;
+    }
+};
+
 export const getGenresMovies = async () => {
     try {
         const response = await fetch(
