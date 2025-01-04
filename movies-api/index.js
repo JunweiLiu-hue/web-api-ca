@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import moviesRouter from './api/movies'; 
 import reviewsRouter from './api/reviews'; 
 import favoritesRouter from './api/favorites'; 
+import actorRouter from './api/actors';
 import authenticate from './authenticate';
 import './db'; 
 dotenv.config();
@@ -15,6 +16,7 @@ app.use(cors());
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true })); 
 app.use('/api/movies', moviesRouter);
+app.use('/api/actors', actorRouter);
 app.use('/api/reviews', reviewsRouter);
 app.use('/api/favorites', favoritesRouter);
 app.use((err, req, res, next) => {

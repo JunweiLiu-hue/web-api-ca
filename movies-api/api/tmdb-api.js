@@ -88,7 +88,7 @@ export const getMovieReviews = async (movieId) => {
 export const getMovieDetails = async (movieId) => {
     try {
         const response = await fetch(
-            `https://api.themoviedb.org/3/movie/${movieId}?api_key=${process.env.TMDB_KEY}&language=en-US`
+            `https://api.themoviedb.org/3/movie/${movieId}?api_key=${process.env.TMDB_KEY}&language=en-US&append_to_response=credits`
         );
 
         if (!response.ok) {
@@ -103,3 +103,39 @@ export const getMovieDetails = async (movieId) => {
     }
 };
 
+
+export const getActorDetails = async (actorId) => {
+    try {
+        const response = await fetch(
+            `https://api.themoviedb.org/3/person/${actorId}?api_key=${process.env.TMDB_KEY}&language=en-US`
+        );
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching actor details:', error.message);
+        throw error;
+    }
+};
+
+export const getActorCredits = async (actorId) => {
+    try {
+        const response = await fetch(
+            `https://api.themoviedb.org/3/person/${actorId}/movie_credits?api_key=${process.env.TMDB_KEY}&language=en-US`
+        );
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching actor credits:', error.message);
+        throw error;
+    }
+};

@@ -6,7 +6,9 @@ import {
     getGenresMovies,
     getPopularMovies,
     getNowPlayingMovies,
-    getMovieDetails
+    getMovieDetails,
+    getActorDetails,
+    getActorCredits
   } from '../tmdb-api';
 
 const router = express.Router();
@@ -118,6 +120,6 @@ router.get('/details/:id', asyncHandler(async (req, res) => {
       res.status(500).json({ message: error.message });
     }
   }));
-  
 
+  
 export default router;
