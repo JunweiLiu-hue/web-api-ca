@@ -10,7 +10,9 @@ const ActorDetails = ({ actor, credits }) => {
         return <Spinner />;
     }
 
-    const sortedMovies = credits.cast.sort((a, b) => {
+    const cast = credits?.cast || [];
+
+    const sortedMovies = cast.sort((a, b) => {
         const yearA = a.release_date ? a.release_date.split("-")[0] : "N/A";
         const yearB = b.release_date ? b.release_date.split("-")[0] : "N/A";
         return yearB.localeCompare(yearA);
@@ -23,7 +25,7 @@ const ActorDetails = ({ actor, credits }) => {
             </Typography>
             <br />
             <Typography variant="h6" component="p">
-                {actor.biography}
+                {actor.biography || "Biography not available."}
             </Typography>
             <br />
             <Typography variant="h4" component="h3">
@@ -40,7 +42,7 @@ const ActorDetails = ({ actor, credits }) => {
                 boxSizing: 'border-box',
                 height: '400px',
             }}>
-                {credits && credits.cast && credits.cast.map((movie) => (
+                {cast.map((movie) => (
                     <ImageListItem key={movie.id} style={{
                         minWidth: '150px',
                         marginRight: '10px',
@@ -61,7 +63,7 @@ const ActorDetails = ({ actor, credits }) => {
                         <Typography variant="subtitle1" component="h4">
                             {movie.title}
                         </Typography>
-                        <Chip label={`Role: ${movie.character}`} style={{ margin: '4px 0' }} />
+                        <Chip label={`Role: ${movie.character || "Unknown"}`} style={{ margin: '4px 0' }} />
                     </ImageListItem>
                 ))}
             </div>
@@ -73,8 +75,8 @@ const ActorDetails = ({ actor, credits }) => {
 
             {sortedMovies.map((movie) => {
                 const year = movie.release_date ? movie.release_date.split("-")[0] : "N/A";
-                const title = movie.title || movie.name;
-                const role = movie.character || "N/A";
+                const title = movie.title || movie.name || "Unknown Title";
+                const role = movie.character || "Unknown Role";
 
                 return (
                     <div key={movie.id} style={{ marginBottom: '15px' }}>

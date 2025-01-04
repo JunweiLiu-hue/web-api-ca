@@ -165,14 +165,17 @@ export const getPopularMovies = async () => {
   export const getActorDetails = (args) => {
     const [, idPart] = args.queryKey;
     const { id } = idPart;
-    return fetch(
-      `/api/movies/actor/${id}` 
-    )
+  
+    return fetch(`/api/actors/${id}`)
       .then((response) => {
         if (!response.ok) {
-          return response.json().then((error) => {
-            throw new Error(error.message || "Something went wrong");
-          });
+          const contentType = response.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            return response.json().then((error) => {
+              throw new Error(error.message || "Something went wrong");
+            });
+          }
+          throw new Error("Invalid response format");
         }
         return response.json();
       })
@@ -181,6 +184,7 @@ export const getPopularMovies = async () => {
         throw error;
       });
   };
+  
   
   export const getActorCredits = async (id) => {
     try {

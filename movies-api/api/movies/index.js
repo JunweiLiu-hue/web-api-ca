@@ -7,8 +7,6 @@ import {
     getPopularMovies,
     getNowPlayingMovies,
     getMovieDetails,
-    getActorDetails,
-    getActorCredits
   } from '../tmdb-api';
 
 const router = express.Router();
