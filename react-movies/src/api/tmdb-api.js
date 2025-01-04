@@ -1,55 +1,32 @@
-
 export const getMovies = async (page = 1) => {
-  const response = await fetch(
-    `https://api.themoviedb.org/3/discover/movie?api_key=${process.env.REACT_APP_TMDB_KEY}&page=${page}`
-  );
-  if (!response.ok) {
-    throw new Error('Failed to fetch movies');
+  try {
+    const url = `/api/movies?page=${page}`; // 使用相对路径
+    console.log('Fetching movies from:', url);
+    const response = await fetch(url, { cache: "no-store" });
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Error response body:', errorData);
+      throw new Error('Failed to fetch movies');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error in getMovies:', error);
+    throw error;
   }
-  const data = await response.json();
-  const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-  const movies = data.results.map(movie => ({
-    ...movie,
-    favorite: favorites.includes(movie.id), 
-  }));
-
-  return {
-    ...data,
-    results: movies, 
-  };
 };
 
-
-export const getUpcomingMovies = () => {
-  return fetch(
-    `https://api.themoviedb.org/3/movie/upcoming?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=1`
-  ).then((response) => {
+export const getUpcomingMovies = async () => {
+  try {
+    const url = `/api/movies/tmdb/upcoming`;
+    const response = await fetch(url);
     if (!response.ok) {
-      return response.json().then((error) => {
-        throw new Error(error.status_message || "Something went wrong");
-      });
+      throw new Error('Failed to fetch upcoming movies');
     }
-    return response.json();
-  })
-  .catch((error) => {
+    return await response.json();
+  } catch (error) {
+    console.error('Error in getUpcomingMovies:', error);
     throw error;
-  });
-};
-
-export const getPopularMovies = () => {
-  return fetch(
-    `https://api.themoviedb.org/3/movie/popular?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=1`
-  ).then((response) => {
-    if (!response.ok) {
-      return response.json().then((error) => {
-        throw new Error(error.status_message || "Something went wrong");
-      });
-    }
-    return response.json();
-  })
-  .catch((error) => {
-    throw error;
-  });
+  }
 };
 
 export const getNowPlayingMovies = () => {
@@ -67,27 +44,34 @@ export const getNowPlayingMovies = () => {
     throw error;
   });
 };
-
-  
-export const getMovie = (args) => {
-  const [, idPart] = args.queryKey;
-  const { id } = idPart;
-
-  return fetch(
-    `https://api.themoviedb.org/3/movie/${id}?api_key=${process.env.REACT_APP_TMDB_KEY}&append_to_response=credits`
-  ).then((response) => {
+ 
+export const getMovie = async (movieId) => {
+  try {
+    const url = `/api/movies/${movieId}`;
+    const response = await fetch(url);
     if (!response.ok) {
-      return response.json().then((error) => {
-        throw new Error(error.status_message || "Something went wrong");
-      });
+      throw new Error('Failed to fetch movie details');
     }
-    return response.json();
-  })
-  .catch((error) => {
+    return await response.json();
+  } catch (error) {
+    console.error('Error in getMovie:', error);
     throw error;
-  });
+  }
 };
 
+export const getPopularMovies = async () => {
+  try {
+    const url = `/api/movies/tmdb/popular`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error('Failed to fetch popular movies');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error in getPopularMovies:', error);
+    throw error;
+  }
+};
   
   export const getGenres = () => {
     return fetch(
@@ -147,22 +131,18 @@ export const getMovie = (args) => {
   };
   
   
-  export const getMovieReviews = ({ queryKey }) => {
-    const [, idPart] = queryKey;
-    const { id } = idPart;
-    return fetch(
-      `https://api.themoviedb.org/3/movie/${id}/reviews?api_key=${process.env.REACT_APP_TMDB_KEY}`
-    ).then( (response) => {
+  export const getMovieReviews = async (movieId) => {
+    try {
+      const url = `/api/reviews/${movieId}`;
+      const response = await fetch(url);
       if (!response.ok) {
-        return response.json().then((error) => {
-          throw new Error(error.status_message || "Something went wrong");
-        });
+        throw new Error('Failed to fetch reviews');
       }
-      return response.json();
-    })
-    .catch((error) => {
-      throw error
-   });
+      return await response.json();
+    } catch (error) {
+      console.error('Error in getMovieReviews:', error);
+      throw error;
+    }
   };
 
   export const getActorDetails = (args) => {
@@ -227,58 +207,37 @@ export const createSession = async (requestToken) => {
   return data.session_id;
 };
 
-export const addToFavorites = async (sessionId, movieId) => {
-  const response = await fetch(
-    `https://api.themoviedb.org/3/account/favorite?api_key=${process.env.REACT_APP_TMDB_KEY}&session_id=${sessionId}`,
-    {
+export const addToFavorites = async (userId, movieId) => {
+  try {
+    const url = `/api/favorites`;
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        media_type: 'movie',
-        media_id: movieId,
-        favorite: true,
-      }),
+      body: JSON.stringify({ userId, movieId }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to add to favorites');
     }
-  );
-  const data = await response.json();
-
-  if (data.status_code === 1) {
-    let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-    if (!favorites.includes(movieId)) {
-      favorites.push(movieId);
-    }
-    localStorage.setItem('favorites', JSON.stringify(favorites));
+    return await response.json();
+  } catch (error) {
+    console.error('Error in addToFavorites:', error);
+    throw error;
   }
-
-  return data;
 };
 
-export const removeFromFavorites = async (sessionId, movieId) => {
-  const response = await fetch(
-    `https://api.themoviedb.org/3/account/favorite?api_key=${process.env.REACT_APP_TMDB_KEY}&session_id=${sessionId}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        media_type: 'movie',
-        media_id: movieId,
-        favorite: false,
-      }),
+export const removeFromFavorites = async (userId, movieId) => {
+  try {
+    const url = `/api/favorites?userId=${userId}&movieId=${movieId}`;
+    const response = await fetch(url, { method: 'DELETE' });
+    if (!response.ok) {
+      throw new Error('Failed to remove from favorites');
     }
-  );
-  const data = await response.json();
-
-  if (data.status_code === 1) {
-    let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-    favorites = favorites.filter(id => id !== movieId);
-    localStorage.setItem('favorites', JSON.stringify(favorites));
+  } catch (error) {
+    console.error('Error in removeFromFavorites:', error);
+    throw error;
   }
-
-  return data;
 };
 
 export const addToWatchlist = async (sessionId, movieId) => {
@@ -344,12 +303,14 @@ export const getWatchlistFromLocalStorage = () => {
   return JSON.parse(localStorage.getItem('watchlist')) || [];
 };
 
-export const getFavorites = async (sessionId) => {
+export const getFavorites = async (userId) => {
   const response = await fetch(
-    `https://api.themoviedb.org/3/account/favorites/movies?api_key=${process.env.REACT_APP_TMDB_KEY}&session_id=${sessionId}`
+    `${process.env.REACT_APP_API_BASE_URL}/favorites?userId=${userId}`
   );
-  const data = await response.json();
-  return data; 
+  if (!response.ok) {
+    throw new Error('Failed to fetch favorites');
+  }
+  return await response.json();
 };
 
 export const getWatchlist = async (sessionId) => {
@@ -380,5 +341,19 @@ export const submitRating = async (movieId, rating, sessionId) => {
   } catch (err) {
     console.error('Error submitting rating:', err);
     throw new Error('Error submitting rating');
+  }
+};
+
+export const getMoviesByYear = async (year) => {
+  try {
+    const url = `/api/movies/year/${year}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error('Failed to fetch movies by year');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error in getMoviesByYear:', error);
+    throw error;
   }
 };

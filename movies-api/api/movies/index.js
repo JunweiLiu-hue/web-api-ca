@@ -10,25 +10,34 @@ import {
 const router = express.Router();
 
 router.get('/', asyncHandler(async (req, res) => {
-    let { page = 1, limit = 10 } = req.query; // destructure page and limit and set default values
-    [page, limit] = [+page, +limit]; //trick to convert to numeric (req.query will contain string values)
+    try {
+        let { page = 1, limit = 10 } = req.query;
+        [page, limit] = [+page, +limit];
 
-    // Parallel execution of counting movies and getting movies using movieModel
-    const [total_results, results] = await Promise.all([
-        movieModel.estimatedDocumentCount(),
-        movieModel.find().limit(limit).skip((page - 1) * limit)
-    ]);
-    const total_pages = Math.ceil(total_results / limit); //Calculate total number of pages (= total No Docs/Number of docs per page) 
+        console.log(`Fetching movies with page: ${page}, limit: ${limit}`);
 
-    //construct return Object and insert into response object
-    const returnObject = {
-        page,
-        total_pages,
-        total_results,
-        results
-    };
-    res.status(200).json(returnObject);
+        const [total_results, results] = await Promise.all([
+            movieModel.estimatedDocumentCount(),
+            movieModel.find().limit(limit).skip((page - 1) * limit)
+        ]);
+
+        const total_pages = Math.ceil(total_results / limit);
+
+        const returnObject = {
+            page,
+            total_pages,
+            total_results,
+            results,
+        };
+
+        console.log('Returning movies:', returnObject);
+        res.status(200).json(returnObject);
+    } catch (error) {
+        console.error('Error fetching movies:', error.stack);
+        res.status(500).send('Internal Server Error');
+    }
 }));
+
 
 router.get('/language/:lang', asyncHandler(async (req, res) => {
     const language = req.params.lang; 
