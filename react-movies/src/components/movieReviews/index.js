@@ -1,5 +1,6 @@
+import React from "react";
 import { useQuery } from "react-query";
-import Spinner from '../spinner'
+import Spinner from "../spinner";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -11,27 +12,40 @@ import { Link } from "react-router-dom";
 import { getMovieReviews } from "../../api/tmdb-api";
 import { excerpt } from "../../util";
 
-export default function MovieReviews({ movie }) {
-  const { data , error, isLoading, isError } = useQuery(
-    ["reviews", { id: movie.id }],
-    getMovieReviews
+const MovieReviews = ({ movie }) => {
+  const movieId = movie?.id;
+
+  const { data, error, isLoading, isError } = useQuery(
+    ["reviews", movieId],
+    () => getMovieReviews(movieId),
+    {
+      enabled: !!movieId,
+    }
   );
-  
+
+  console.log("MovieReviews - Fetched data:", data);
+
   if (isLoading) {
     return <Spinner />;
   }
 
   if (isError) {
+    console.error("Error fetching reviews:", error.message);
     return <h1>{error.message}</h1>;
   }
-  
-  const reviews = data.results;
+
+  const reviews = Array.isArray(data) ? data : data?.results || [];
+
+  if (reviews.length === 0) {
+    return <h2>No reviews found for this movie.</h2>;
+  }
+
   return (
     <TableContainer component={Paper}>
-      <Table sx={{minWidth: 550}} aria-label="reviews table">
+      <Table sx={{ minWidth: 550 }} aria-label="reviews table">
         <TableHead>
           <TableRow>
-            <TableCell >Author</TableCell>
+            <TableCell>Author</TableCell>
             <TableCell align="center">Excerpt</TableCell>
             <TableCell align="right">More</TableCell>
           </TableRow>
@@ -42,13 +56,13 @@ export default function MovieReviews({ movie }) {
               <TableCell component="th" scope="row">
                 {r.author}
               </TableCell>
-              <TableCell >{excerpt(r.content)}</TableCell>
-              <TableCell >
-              <Link
+              <TableCell>{excerpt(r.content)}</TableCell>
+              <TableCell>
+                <Link
                   to={`/reviews/${r.id}`}
                   state={{
-                      review: r,
-                      movie: movie,
+                    review: r,
+                    movie: movie,
                   }}
                 >
                   Full Review
@@ -60,4 +74,6 @@ export default function MovieReviews({ movie }) {
       </Table>
     </TableContainer>
   );
-}
+};
+
+export default MovieReviews;

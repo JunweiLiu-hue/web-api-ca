@@ -91,11 +91,11 @@ const MovieDetails = ({ movie }) => {
                 ))}
             </Paper>
 
-            <Box 
-                sx={{ 
-                    display: "flex", 
-                    justifyContent: "center", 
-                    marginTop: 2 
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    marginTop: 2
                 }}
             >
                 <Link to={`/rate/${movie.id}`} style={{ textDecoration: 'none' }}>
@@ -117,7 +117,10 @@ const MovieDetails = ({ movie }) => {
             <Fab
                 color="secondary"
                 variant="extended"
-                onClick={() => setDrawerOpen(true)}
+                onClick={() => {
+                    console.log("Movie passed to MovieReviews:", movie);
+                    setDrawerOpen(true);
+                }}
                 sx={{
                     position: 'fixed',
                     bottom: '1em',

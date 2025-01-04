@@ -5,32 +5,18 @@ import { getMovieReviews } from '../tmdb-api';
 
 const router = express.Router();
 
-router.get('/:movieId/reviews', asyncHandler(async (req, res) => {
+router.get('/:movieId', asyncHandler(async (req, res) => {
     const { movieId } = req.params;
-
+    console.log("Fetching reviews for movieId:", movieId);
     try {
-        const tmdbReviews = await getMovieReviews(movieId);
+        const reviews = await Review.find({ movieId });
 
-        if (!tmdbReviews || tmdbReviews.length === 0) {
+        if (!reviews || reviews.length === 0) {
             return res.status(404).json({ message: `No reviews found for movie ID: ${movieId}` });
         }
-
-        const savedReviews = [];
-        for (const review of tmdbReviews) {
-            const existingReview = await Review.findOne({ movieId, author: review.author, content: review.content });
-            if (!existingReview) {
-                const newReview = new Review({
-                    movieId,
-                    author: review.author,
-                    content: review.content,
-                });
-                await newReview.save();
-                savedReviews.push(newReview);
-            }
-        }
-
-        res.status(200).json(savedReviews);
+        res.status(200).json(reviews);
     } catch (error) {
+        console.error('Error fetching reviews:', error.message);
         res.status(500).json({ message: error.message });
     }
 }));

@@ -118,6 +118,5 @@ router.get('/details/:id', asyncHandler(async (req, res) => {
       res.status(500).json({ message: error.message });
     }
   }));
-
   
 export default router;

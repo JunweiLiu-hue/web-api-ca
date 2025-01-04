@@ -150,18 +150,21 @@ export const getPopularMovies = async () => {
   
   export const getMovieReviews = async (movieId) => {
     try {
-      const url = `/api/reviews/${movieId}`;
+      console.log("Fetching reviews for movie ID:", movieId); 
+      const url = `/api/reviews/${movieId}`; 
       const response = await fetch(url);
       if (!response.ok) {
-        throw new Error('Failed to fetch reviews');
+        const errorData = await response.json();
+        console.error("Error response:", errorData); 
+        throw new Error(errorData.message || "Failed to fetch reviews");
       }
       return await response.json();
     } catch (error) {
-      console.error('Error in getMovieReviews:', error);
+      console.error("Error in getMovieReviews:", error.message);
       throw error;
     }
   };
-
+  
   export const getActorDetails = (args) => {
     const [, idPart] = args.queryKey;
     const { id } = idPart;

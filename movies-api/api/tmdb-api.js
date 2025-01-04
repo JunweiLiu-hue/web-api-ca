@@ -71,16 +71,18 @@ export const getGenresMovies = async () => {
 export const getMovieReviews = async (movieId) => {
     try {
         const response = await fetch(
-            `https://api.themoviedb.org/3/movie/${movieId}/reviews?api_key=${process.env.TMDB_KEY}&language=en-US&page=1`
+            `https://api.themoviedb.org/3/movie/${movieId}/reviews?api_key=${process.env.TMDB_KEY}`
         );
 
         if (!response.ok) {
-            throw new Error((await response.json()).message);
+            const error = await response.json();
+            throw new Error(error.status_message || 'Failed to fetch movie reviews');
         }
 
         const data = await response.json();
-        return data.results; 
+        return data; 
     } catch (error) {
+        console.error('Error fetching movie reviews:', error.message);
         throw error;
     }
 };
