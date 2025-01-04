@@ -1,6 +1,6 @@
 export const getMovies = async (page = 1) => {
   try {
-    const url = `/api/movies?page=${page}`; // 使用相对路径
+    const url = `/api/movies?page=${page}`; 
     console.log('Fetching movies from:', url);
     const response = await fetch(url, { cache: "no-store" });
     if (!response.ok) {
