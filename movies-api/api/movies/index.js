@@ -5,6 +5,7 @@ import {
     getUpcomingMovies,
     getGenresMovies,
     getPopularMovies,
+    getNowPlayingMovies,
     getMovieDetails
   } from '../tmdb-api';
 
@@ -92,6 +93,16 @@ router.get('/tmdb/genres', asyncHandler(async (req, res) => {
 router.get('/tmdb/popular', asyncHandler(async (req, res) => {
     const popularMovies = await getPopularMovies();
     res.status(200).json(popularMovies);
+}));
+
+router.get('/tmdb/nowplaying', asyncHandler(async (req, res) => {
+    try {
+        const nowPlayingMovies = await getNowPlayingMovies();
+        res.status(200).json(nowPlayingMovies);
+    } catch (error) {
+        console.error('Error fetching now playing movies:', error.message);
+        res.status(500).json({ message: error.message });
+    }
 }));
 
 router.get('/details/:id', asyncHandler(async (req, res) => {
