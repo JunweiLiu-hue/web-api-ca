@@ -1,5 +1,8 @@
-import React, { useState } from "react";
-import { getMovies } from "../api/tmdb-api";
+import React, { useState, useEffect } from "react";
+import { getMovies,
+         addToFavorites,
+         removeFromFavorites
+ } from "../api/tmdb-api";
 import PageTemplate from '../components/templateMovieListPage';
 import { useQuery } from 'react-query';
 import Spinner from '../components/spinner';
@@ -7,13 +10,32 @@ import AddToFavoritesIcon from '../components/cardIcons/addToFavorites';
 import Pagination from "@mui/material/Pagination"; 
 import Box from "@mui/material/Box"; 
 
-const HomePage = (props) => {
+const HomePage = () => {
   const [page, setPage] = useState(1);
+  const [favorites, setFavorites] = useState([]); 
 
   const { data, error, isLoading, isError } = useQuery(['discover', page], () => getMovies(page), {
     keepPreviousData: true, 
   });
 
+  const fetchFavorites = async () => {
+    try {
+      const userId = localStorage.getItem('userId'); 
+      if (!userId) return; 
+      const response = await fetch(`/api/favorites?userId=${userId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch favorites');
+      }
+      const data = await response.json();
+      setFavorites(data.map(favorite => favorite.movieId)); 
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchFavorites();
+  }, []); 
   if (isLoading) {
     return <Spinner />;
   }
@@ -24,18 +46,36 @@ const HomePage = (props) => {
 
   const movies = data.results;
 
-  const handleAddToFavorites = (movieId) => {
-    const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-    if (!favorites.includes(movieId)) {
-      favorites.push(movieId);
-      localStorage.setItem('favorites', JSON.stringify(favorites));
+  const handleAddToFavorites = async (movieId) => {
+    try {
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        alert('Please log in to add favorites.');
+        return;
+      }
+      await addToFavorites(userId, movieId);
+      setFavorites([...favorites, movieId]); 
+      alert('Added to favorites!');
+    } catch (error) {
+      console.error('Error adding to favorites:', error);
+      alert('Failed to add to favorites.');
     }
   };
 
-  const handleRemoveFromFavorites = (movieId) => {
-    const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-    const updatedFavorites = favorites.filter(id => id !== movieId);
-    localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+  const handleRemoveFromFavorites = async (movieId) => {
+    try {
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        alert('Please log in to remove favorites.');
+        return;
+      }
+      await removeFromFavorites(userId, movieId);
+      setFavorites(favorites.filter(id => id !== movieId)); 
+      alert('Removed from favorites!');
+    } catch (error) {
+      console.error('Error removing from favorites:', error);
+      alert('Failed to remove from favorites.');
+    }
   };
 
   const handlePageChange = (event, value) => {
@@ -48,7 +88,15 @@ const HomePage = (props) => {
         title="Discover Movies"
         movies={movies}
         action={(movie) => {
-          return <AddToFavoritesIcon movie={movie} onAdd={handleAddToFavorites} onRemove={handleRemoveFromFavorites} />;
+          const isFavorite = favorites.includes(movie.id); 
+          return (
+            <AddToFavoritesIcon
+              movie={movie}
+              isFavorite={isFavorite}
+              onAdd={handleAddToFavorites}
+              onRemove={handleRemoveFromFavorites}
+            />
+          );
         }}
       />
       <Box sx={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>

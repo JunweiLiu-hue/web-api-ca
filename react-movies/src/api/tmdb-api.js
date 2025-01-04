@@ -207,36 +207,36 @@ export const createSession = async (requestToken) => {
   return data.session_id;
 };
 
-export const addToFavorites = async (userId, movieId) => {
-  try {
-    const url = `/api/favorites`;
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ userId, movieId }),
-    });
-    if (!response.ok) {
-      throw new Error('Failed to add to favorites');
-    }
-    return await response.json();
-  } catch (error) {
-    console.error('Error in addToFavorites:', error);
-    throw error;
+export const addToFavorites = async (movieId) => {
+  const sessionId = localStorage.getItem('tmdbSessionId');
+  if (!sessionId || !movieId) {
+    console.error('Invalid userId or movieId:', { userId: sessionId, movieId });
+    throw new Error('Invalid userId or movieId.');
   }
+  const response = await fetch('/api/favorites', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId: sessionId, movieId }),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to add to favorites');
+  }
+  return response.json();
 };
 
-export const removeFromFavorites = async (userId, movieId) => {
-  try {
-    const url = `/api/favorites?userId=${userId}&movieId=${movieId}`;
-    const response = await fetch(url, { method: 'DELETE' });
-    if (!response.ok) {
-      throw new Error('Failed to remove from favorites');
-    }
-  } catch (error) {
-    console.error('Error in removeFromFavorites:', error);
-    throw error;
+
+export const removeFromFavorites = async (movieId) => {
+  const sessionId = localStorage.getItem('tmdbSessionId'); 
+  if (!sessionId) {
+    throw new Error('Session ID not found. Please login.');
+  }
+  const response = await fetch(`/api/favorites?userId=${sessionId}&movieId=${movieId}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to remove from favorites');
   }
 };
 
