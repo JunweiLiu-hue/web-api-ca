@@ -66,3 +66,22 @@ export const getMovieReviews = async (movieId) => {
         throw error;
     }
 };
+
+export const getMovieDetails = async (movieId) => {
+    try {
+        const response = await fetch(
+            `https://api.themoviedb.org/3/movie/${movieId}?api_key=${process.env.TMDB_KEY}&language=en-US`
+        );
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching movie details:', error.message);
+        throw error;
+    }
+};
+

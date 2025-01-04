@@ -4,7 +4,8 @@ import express from 'express';
 import {
     getUpcomingMovies,
     getGenresMovies,
-    getPopularMovies
+    getPopularMovies,
+    getMovieDetails
   } from '../tmdb-api';
 
 const router = express.Router();
@@ -93,6 +94,19 @@ router.get('/tmdb/popular', asyncHandler(async (req, res) => {
     res.status(200).json(popularMovies);
 }));
 
-
+router.get('/details/:id', asyncHandler(async (req, res) => {
+    const movieId = parseInt(req.params.id, 10); 
+    if (isNaN(movieId)) {
+      return res.status(400).json({ message: 'Invalid movie ID' });
+    }
+  
+    try {
+      const movieDetails = await getMovieDetails(movieId); 
+      res.status(200).json(movieDetails);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }));
+  
 
 export default router;
