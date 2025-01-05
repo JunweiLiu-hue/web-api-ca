@@ -379,3 +379,46 @@ export const getMoviesByYear = async (year) => {
     throw error;
   }
 };
+
+export const login = async (username, password) => {
+  try {
+      const response = await fetch(`/api/users/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+      });
+
+      if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.msg || 'Failed to log in');
+      }
+
+      const data = await response.json();
+      return data; 
+  } catch (error) {
+      console.error('Error logging in:', error.message);
+      throw error;
+  }
+};
+
+export const register = async (username, password) => {
+  try {
+      const response = await fetch(`/api/users/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+      });
+
+      if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.msg || 'Failed to register');
+      }
+
+      const data = await response.json();
+      return data;
+  } catch (error) {
+      console.error('Error registering:', error.message);
+      throw error;
+  }
+};
+

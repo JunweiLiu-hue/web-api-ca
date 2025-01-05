@@ -15,6 +15,7 @@ import NowPlayingPage from "./pages/nowPlayingPage";
 import WatchListPage from "./pages/watchListPage";
 import ActorDetails from "./pages/actorDetails";
 import LoginPage from "./pages/loginPage";
+import RegisterPage from "./pages/registerPage";
 import PopularPage from "./pages/popularPage.js";
 import RatePage from "./pages/ratePage.js";
 import LogoutPage from "./pages/logoutPage.js";
@@ -40,6 +41,7 @@ const App = () => {
             <Route path="/movies/popular" element={<PopularPage />} />
             <Route path="/movies/home" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
             <Route path="/movies/upcoming" element={<UpcomingPage />} />
             <Route path="/login/callback" element={<LoginPage />} />
             <Route path="/movies/nowplaying" element={<NowPlayingPage />} />

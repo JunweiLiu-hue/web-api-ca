@@ -1,25 +1,26 @@
 import React, { useState } from 'react';
-import { login } from '../api/tmdb-api';
+import { register } from '../api/tmdb-api';
 
-const LoginPage = () => {
+const RegisterPage = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
 
-    const handleLogin = async () => {
+    const handleRegister = async () => {
         try {
-            const data = await login(username, password);
-            setSuccessMessage('Login successful!');
-            localStorage.setItem('token', data.token); 
+            const data = await register(username, password);
+            setSuccessMessage('Registration successful!');
+            setErrorMessage('');
         } catch (error) {
             setErrorMessage(error.message);
+            setSuccessMessage('');
         }
     };
 
     return (
         <div>
-            <h2>Login</h2>
+            <h2>Register</h2>
             {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
             {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
             <input
@@ -34,9 +35,9 @@ const LoginPage = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
             />
-            <button onClick={handleLogin}>Login</button>
+            <button onClick={handleRegister}>Register</button>
         </div>
     );
 };
 
-export default LoginPage;
+export default RegisterPage;
