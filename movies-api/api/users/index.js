@@ -27,7 +27,6 @@ router.post('/register', asyncHandler(async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({ username, password: hashedPassword });
-
     await user.save();
     res.status(201).json({ success: true, msg: 'User successfully registered.' });
 }));
@@ -50,7 +49,8 @@ router.post('/login', asyncHandler(async (req, res) => {
     }
 
     const token = jwt.sign({ username: user.username }, process.env.SECRET, { expiresIn: '1h' });
-    res.status(200).json({ success: true, token: 'Bearer ' + token });
+
+    res.status(200).json({ success: true, username: user.username, token });
 }));
 
 router.put('/:id', asyncHandler(async (req, res) => {

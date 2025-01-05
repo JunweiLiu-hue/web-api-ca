@@ -205,62 +205,72 @@ export const getPopularMovies = async () => {
     }
 };
 
-
-export const getRequestToken = async () => {
-  const response = await fetch(
-    `https://api.themoviedb.org/3/authentication/token/new?api_key=${process.env.REACT_APP_TMDB_KEY}`
-  );
-  const data = await response.json();
-  return data.request_token;
-};
-
-export const createSession = async (requestToken) => {
-  const response = await fetch(
-    `https://api.themoviedb.org/3/authentication/session/new?api_key=${process.env.REACT_APP_TMDB_KEY}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ request_token: requestToken }),
-    }
-  );
-  const data = await response.json();
-  return data.session_id;
-};
-
-export const addToFavorites = async (movieId) => {
-  const sessionId = localStorage.getItem('tmdbSessionId');
-  if (!sessionId || !movieId) {
-    console.error('Invalid userId or movieId:', { userId: sessionId, movieId });
-    throw new Error('Invalid userId or movieId.');
+export const getFavorites = async (username) => {
+  const token = localStorage.getItem("token");
+  if (!username || !token) {
+    throw new Error("Invalid username or missing token.");
   }
-  const response = await fetch('/api/favorites', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId: sessionId, movieId }),
+
+  const response = await fetch(`/api/favorites/${username}/favorites`, { 
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
   });
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.message || 'Failed to add to favorites');
+    throw new Error(errorData.message || "Failed to fetch favorites");
   }
-  return response.json();
+
+  return await response.json();
 };
 
 
-export const removeFromFavorites = async (movieId) => {
-  const sessionId = localStorage.getItem('tmdbSessionId'); 
-  if (!sessionId) {
-    throw new Error('Session ID not found. Please login.');
+export const addToFavorite = async (movieId) => {
+  const token = localStorage.getItem("token");
+  const username = localStorage.getItem("username"); 
+  if (!username || !movieId || !token) {
+    throw new Error("Invalid username, movieId, or missing token.");
   }
-  const response = await fetch(`/api/favorites?userId=${sessionId}&movieId=${movieId}`, {
-    method: 'DELETE',
+
+  const response = await fetch(`/api/favorites/${username}/favorites`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`, 
+    },
+    body: JSON.stringify({ username, movieId }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to add to favorites");
+  }
+
+  return await response.json();
+};
+
+export const removeFromFavorite = async (username, movieId) => {
+  const token = localStorage.getItem("token");
+  if (!username || !movieId || !token) {
+    throw new Error("Invalid username, movieId, or missing token.");
+  }
+  const response = await fetch(`/api/favorites/${username}/favorites`, { 
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ movieId }),
   });
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.message || 'Failed to remove from favorites');
+    throw new Error(errorData.message || "Failed to remove from favorites");
   }
+  return await response.json();
 };
+
 
 export const addToWatchlist = async (sessionId, movieId) => {
   const response = await fetch(
@@ -325,16 +335,6 @@ export const getWatchlistFromLocalStorage = () => {
   return JSON.parse(localStorage.getItem('watchlist')) || [];
 };
 
-export const getFavorites = async (userId) => {
-  const response = await fetch(
-    `${process.env.REACT_APP_API_BASE_URL}/favorites?userId=${userId}`
-  );
-  if (!response.ok) {
-    throw new Error('Failed to fetch favorites');
-  }
-  return await response.json();
-};
-
 export const getWatchlist = async (sessionId) => {
   const response = await fetch(
     `https://api.themoviedb.org/3/account/watchlist/movies?api_key=${process.env.REACT_APP_TMDB_KEY}&session_id=${sessionId}`
@@ -387,12 +387,10 @@ export const login = async (username, password) => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password }),
       });
-
       if (!response.ok) {
           const error = await response.json();
           throw new Error(error.msg || 'Failed to log in');
       }
-
       const data = await response.json();
       return data; 
   } catch (error) {
@@ -400,6 +398,7 @@ export const login = async (username, password) => {
       throw error;
   }
 };
+
 
 export const register = async (username, password) => {
   try {

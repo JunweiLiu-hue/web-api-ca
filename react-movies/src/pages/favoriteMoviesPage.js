@@ -1,39 +1,46 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import PageTemplate from "../components/templateMovieListPage";
 import { MoviesContext } from "../contexts/moviesContext";
-import { useQueries } from "react-query";
 import { getMovie } from "../api/tmdb-api";
 import Spinner from '../components/spinner';
 import RemoveFromFavorites from "../components/cardIcons/removeFromFavorites";
 import WriteReview from "../components/cardIcons/writeReview";
 
 const FavoriteMoviesPage = () => {
-  const { favorites: movieIds = [] } = useContext(MoviesContext);
+  const { favorites } = useContext(MoviesContext);
+  const [movies, setMovies] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Create an array of queries and run in parallel.
-  const favoriteMovieQueries = useQueries(
-    movieIds.map((movieId) => ({
-      queryKey: ["movie", movieId], // Each movie query is identified by its id
-      queryFn: ({ queryKey }) => getMovie(queryKey[1]), // Fetch movie details using getMovie
-    }))
-  );
+  useEffect(() => {
+    const fetchFavoriteMovies = async () => {
+      try {
+        const movieDetails = await Promise.all(
+          favorites.map(async (movieId) => {
+            const movie = await getMovie(movieId);
+            if (movie.genres) {
+              movie.genre_ids = movie.genres.map((g) => g.id);
+            }
+            return movie;
+          })
+        );
+        setMovies(movieDetails);
+      } catch (error) {
+        console.error("Error fetching favorite movies:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  // Check if any of the parallel queries are still loading.
-  const isLoading = favoriteMovieQueries.some((m) => m.isLoading);
+    if (favorites.length > 0) {
+      fetchFavoriteMovies();
+    } else {
+      setIsLoading(false);
+    }
+  }, [favorites]);
 
   if (isLoading) {
     return <Spinner />;
   }
-
-  const movies = favoriteMovieQueries
-    .map((q) => {
-      if (q.data && q.data.genres) {
-        q.data.genre_ids = q.data.genres.map((g) => g.id); // Transform genres into genre_ids
-        return q.data;
-      }
-      return null; // return null if data is undefined or genres is missing
-    })
-    .filter((movie) => movie !== null); // Remove null values from the list
 
   return (
     <PageTemplate
@@ -41,8 +48,8 @@ const FavoriteMoviesPage = () => {
       movies={movies}
       action={(movie) => (
         <>
-          <RemoveFromFavorites movie={movie} /> {/* Add option to remove from favorites */}
-          <WriteReview movie={movie} /> {/* Add option to write a review */}
+          <RemoveFromFavorites movie={movie} />
+          <WriteReview movie={movie} />
         </>
       )}
     />

@@ -1,52 +1,59 @@
 import express from 'express';
 import asyncHandler from 'express-async-handler';
-import Favorite from './favoriteModel';
+import Favourite from './favoriteModel';
 
 const router = express.Router();
 
-router.post('/', asyncHandler(async (req, res) => {
-    const { userId, movieId } = req.body;
-  
-    if (!userId || !movieId || isNaN(movieId)) {
-      return res.status(400).json({ message: 'Invalid userId or movieId' });
+// Add a favourite movie for a user
+router.post('/:username/favorites', asyncHandler(async (req, res) => {
+    const { username } = req.params;
+    const { movieId } = req.body;
+
+    if (!username || !movieId) {
+        return res.status(400).json({ success: false, msg: 'Username and MovieId are required.' });
     }
-  
-    const existingFavorite = await Favorite.findOne({ userId, movieId });
-    if (existingFavorite) {
-      return res.status(400).json({ message: 'This movie is already in favorites.' });
+
+    const existingFavourite = await Favourite.findOne({ username, movieId });
+    if (existingFavourite) {
+        return res.status(401).json({ success: false, msg: 'It has already been in favourite list.' });
     }
-  
-    const favorite = new Favorite({ userId, movieId });
-    await favorite.save();
-    res.status(201).json(favorite);
-  }));
-  
-  
-  router.get('/', asyncHandler(async (req, res) => {
-    const { userId } = req.query;
-    if (!userId) {
-      return res.status(400).json({ message: 'userId is required.' });
+
+    await Favourite.create({ username, movieId });
+    res.status(201).json({ success: true, msg: 'Favourite successfully added.' });
+}));
+
+// Get all favourites for a user
+router.get('/:username/favorites', asyncHandler(async (req, res) => {
+    const { username } = req.params;
+
+    if (!username) {
+        return res.status(400).json({ success: false, msg: 'Username is required.' });
     }
-    const favorites = await Favorite.find({ userId });
-    res.status(200).json(favorites);
-  }));
-  
-  router.delete('/', asyncHandler(async (req, res) => {
-    const { userId, movieId } = req.query;
-    if (!userId) {
-      return res.status(400).json({ message: 'userId is required.' });
+
+    const favourites = await Favourite.find({ username });
+    if (favourites.length === 0) {
+        return res.status(404).json({ success: false, msg: 'No favourites found for this user.' });
     }
-    let result;
-    if (movieId) {
-      result = await Favorite.findOneAndDelete({ userId, movieId });
-      if (!result) {
-        return res.status(404).json({ message: 'Favorite not found.' });
-      }
-    } else {
-      result = await Favorite.deleteMany({ userId });
+
+    res.status(200).json(favourites);
+}));
+
+// Delete a specific favourite movie
+router.delete('/:username/favorites', asyncHandler(async (req, res) => {
+    const { username } = req.params;
+    const { movieId } = req.body;
+
+    if (!username || !movieId) {
+        return res.status(400).json({ success: false, msg: 'Username and MovieId are required.' });
     }
-    res.status(204).send();
-  }));
-  
+
+    const existingFavourite = await Favourite.findOne({ username, movieId });
+    if (!existingFavourite) {
+        return res.status(404).json({ success: false, msg: 'Favourite not found.' });
+    }
+
+    await Favourite.findOneAndDelete({ username, movieId });
+    res.status(200).json({ success: true, msg: 'Favourite successfully deleted.' });
+}));
 
 export default router;

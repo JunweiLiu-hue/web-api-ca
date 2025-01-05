@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // 导入 useNavigate 钩子
+import { useNavigate } from 'react-router-dom'; 
 import { login } from '../api/tmdb-api';
 
 const LoginPage = () => {
@@ -12,7 +12,9 @@ const LoginPage = () => {
         try {
             const data = await login(username, password);
             setSuccessMessage('Login successful!');
+            console.log(data.token,data.userId);
             localStorage.setItem('token', data.token); 
+            localStorage.setItem('username', data.username);
             setTimeout(() => {
                 navigate('/'); 
             }, 1000); 
