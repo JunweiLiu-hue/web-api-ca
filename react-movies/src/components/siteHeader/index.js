@@ -20,22 +20,28 @@ const SiteHeader = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const navigate = useNavigate();
-  const sessionId = localStorage.getItem('tmdbSessionId');
+  const token = localStorage.getItem('token'); 
 
   const menuOptions = [
     { label: "Home", path: "/movies/home" },
     { label: "UPCOMING", path: "/movies/upcoming" },
     { label: "Now Playing", path: "/movies/nowplaying" },
     { label: "Popular", path: "/movies/popular" },
-    ...(sessionId ? [
+    ...(token ? [
       { label: "Favorites", path: "/movies/favorites" },
       { label: "WatchList", path: "/movies/watchlist" },
     ] : []),
-    { label: sessionId ? "Log Out" : "Login", path: sessionId ? "/logout" : "/login" },
+    ...(token ? [] : [{ label: "Register", path: "/register" }]), 
+    { label: token ? "Log Out" : "Login", path: token ? "/logout" : "/login" },
   ];
 
   const handleMenuSelect = (pageURL) => {
-    navigate(pageURL, { replace: true });
+    if (pageURL === "/logout") {
+      localStorage.removeItem('token');
+      navigate("/login", { replace: true });
+    } else {
+      navigate(pageURL, { replace: true });
+    }
   };
 
   const handleMenu = (event) => {

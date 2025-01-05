@@ -19,7 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/movies', moviesRouter);
 app.use('/api/actors', actorRouter);
 app.use('/api/reviews', reviewsRouter);
-app.use('/api/favorites', favoritesRouter);
+app.use('/api/favorites', authenticate, favoritesRouter);
 app.use('/api/users', usersRouter);
 app.use((err, req, res, next) => {
   console.error(err.stack); 

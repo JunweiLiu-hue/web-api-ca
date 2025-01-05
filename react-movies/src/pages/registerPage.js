@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
 import { register } from '../api/tmdb-api';
+import { useNavigate } from 'react-router-dom';
 
 const RegisterPage = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
+    const navigate = useNavigate(); 
 
     const handleRegister = async () => {
         try {
-            const data = await register(username, password);
+            await register(username, password);
             setSuccessMessage('Registration successful!');
             setErrorMessage('');
+            setTimeout(() => {
+                navigate('/login'); 
+            }, 1000); 
         } catch (error) {
             setErrorMessage(error.message);
             setSuccessMessage('');

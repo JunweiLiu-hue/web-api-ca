@@ -111,7 +111,7 @@ const MoviesContextProvider = (props) => {
   };
   
   const logout = () => {
-    localStorage.removeItem("tmdbSessionId"); 
+    localStorage.removeItem("token"); 
   };
 
   return (
