@@ -7,6 +7,7 @@ import favoritesRouter from './api/favorites';
 import actorRouter from './api/actors';
 import usersRouter from './api/users';
 import authenticate from './authenticate';
+import watchlistRouter from './api/watchlist';
 import './db'; 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use('/api/movies', moviesRouter);
 app.use('/api/actors', actorRouter);
 app.use('/api/reviews', reviewsRouter);
 app.use('/api/favorites', authenticate, favoritesRouter);
+app.use('/api/watchlist', authenticate, watchlistRouter);
 app.use('/api/users', usersRouter);
 app.use((err, req, res, next) => {
   console.error(err.stack); 

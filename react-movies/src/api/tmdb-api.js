@@ -272,58 +272,71 @@ export const removeFromFavorite = async (username, movieId) => {
 };
 
 
-export const addToWatchlist = async (sessionId, movieId) => {
-  const response = await fetch(
-    `https://api.themoviedb.org/3/account/watchlist?api_key=${process.env.REACT_APP_TMDB_KEY}&session_id=${sessionId}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        media_type: 'movie',
-        media_id: movieId,
-        watchlist: true,
-      }),
-    }
-  );
-  const data = await response.json();
-
-  if (data.status_code === 1) {
-    let watchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
-    if (!watchlist.includes(movieId)) {
-      watchlist.push(movieId);
-    }
-    localStorage.setItem('watchlist', JSON.stringify(watchlist));
+export const getWatchlist = async (username) => {
+  const token = localStorage.getItem("token");
+  if (!username || !token) {
+    throw new Error("Invalid username or missing token.");
   }
 
-  return data;
+  const response = await fetch(`/api/watchlist/${username}/watchlist`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to fetch watchlist");
+  }
+
+  return await response.json();
 };
 
-export const removeFromWatchlist = async (sessionId, movieId) => {
-  const response = await fetch(
-    `https://api.themoviedb.org/3/account/watchlist?api_key=${process.env.REACT_APP_TMDB_KEY}&session_id=${sessionId}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        media_type: 'movie',
-        media_id: movieId,
-        watchlist: false,
-      }),
-    }
-  );
-  const data = await response.json();
-
-  if (data.status_code === 1) {
-    let watchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
-    watchlist = watchlist.filter(id => id !== movieId);
-    localStorage.setItem('watchlist', JSON.stringify(watchlist));
+export const addToWatchlist = async (movieId) => {
+  const token = localStorage.getItem("token");
+  const username = localStorage.getItem("username");
+  if (!username || !movieId || !token) {
+    throw new Error("Invalid username, movieId, or missing token.");
   }
 
-  return data;
+  const response = await fetch(`/api/watchlist/${username}/watchlist`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ username, movieId }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to add to watchlist");
+  }
+
+  return await response.json();
+};
+
+export const removeFromWatchlist = async (username, movieId) => {
+  const token = localStorage.getItem("token");
+  if (!username || !movieId || !token) {
+    throw new Error("Invalid username, movieId, or missing token.");
+  }
+
+  const response = await fetch(`/api/watchlist/${username}/watchlist`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ movieId }),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to remove from watchlist");
+  }
+
+  return await response.json();
 };
 
 
@@ -334,15 +347,6 @@ export const getFavoritesFromLocalStorage = () => {
 export const getWatchlistFromLocalStorage = () => {
   return JSON.parse(localStorage.getItem('watchlist')) || [];
 };
-
-export const getWatchlist = async (sessionId) => {
-  const response = await fetch(
-    `https://api.themoviedb.org/3/account/watchlist/movies?api_key=${process.env.REACT_APP_TMDB_KEY}&session_id=${sessionId}`
-  );
-  const data = await response.json();
-  return data; 
-};
-
 
 export const submitRating = async (movieId, rating, sessionId) => {
   try {
