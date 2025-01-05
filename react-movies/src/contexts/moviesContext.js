@@ -22,7 +22,7 @@ const MoviesContextProvider = (props) => {
       newFavorites = [...favorites, movie.id];
     }
     setFavorites(newFavorites);
-    addToFavorite(username, movie.id);
+    addToFavorite(movie.id);
   };
 
   const removeFromFavorites = (movie) => {
